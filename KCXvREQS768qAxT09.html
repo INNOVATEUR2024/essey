@@ -1,0 +1,292 @@
+<html><head><base href="https://websimengine.com/lotto-generator/%20la%20date%20doit%20etre%20a%20jour%20le%20resultat%20doit%20etre%20copier%20et%20repartager%20proposer%20toutes%20les%20dates%20du%20calendrier%20et%20un%20bouton%20pour%20generer%20le%20resultat%20trouver%20ne%20doit%20plus%20etre%20changer%20un%20code%20troix%20chiffres%20doit%20etre%20saisie%20avant%20detre%20generer%20le%20bouton%20generer%20doit%20etre%20afficher%20chaque%20code%20saison%20le%20systeme%20doit%20regenerer%20a%20nouveau%20si%20un%20code%20a%20troix%20chiffre%20est%20entrer%20le%20resultat%20ne%20doit%20plus%20changer%20sauf%20si%20un%20nouveau%20code%20a%203%20chiffres%20est%20saisi%20a%20nouveau%20avec%20une%20nouvelle%20date">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Matrices Lotto - Résultats Fixes par Code et Date</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+        .lotto-result {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .matrix, .keyboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .number {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .code, .event {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #27ae60;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        #dateSelector, #codeInput {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        #copyArea {
+            width: 100%;
+            height: 200px;
+            margin-top: 20px;
+            resize: vertical;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .controls > * {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Générateur de Matrices Lotto - Résultats Fixes par Code et Date</h1>
+    <div class="controls">
+        <input type="date" id="dateSelector">
+        <input type="text" id="codeInput" placeholder="Entrez un code à 3 chiffres" maxlength="3" pattern="\d{3}">
+    </div>
+    <button id="generateButton" onclick="generateLottoResults()">Générer les résultats</button>
+    <div id="results"></div>
+    <textarea id="copyArea" readonly></textarea>
+    <button onclick="copyToClipboard()">Copier les résultats</button>
+    <button onclick="shareResults()">Partager les résultats</button>
+
+    <script>
+        let lastGeneratedCode = '';
+        let lastGeneratedDate = '';
+        let generatedResults = null;
+
+        function generateRandomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateMatrix() {
+            return Array(4).fill().map(() => generateRandomNumber(100, 999));
+        }
+
+        function generateKeyboard() {
+            return Array(4).fill().map(() => generateRandomNumber(100, 999));
+        }
+
+        function generateCode() {
+            return generateRandomNumber(100, 999);
+        }
+
+        function generateEvent() {
+            return generateRandomNumber(1000, 1999);
+        }
+
+        function formatDate(date) {
+            return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+        }
+
+        function initializeDateSelector() {
+            const dateSelector = document.getElementById('dateSelector');
+            const today = new Date();
+            dateSelector.value = today.toISOString().split('T')[0];
+            dateSelector.min = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+            dateSelector.max = new Date(today.getFullYear(), 11, 31).toISOString().split('T')[0];
+        }
+
+        function generateLottoResults() {
+            const codeInput = document.getElementById('codeInput');
+            const dateSelector = document.getElementById('dateSelector');
+            
+            if (!/^\d{3}$/.test(codeInput.value)) {
+                alert("Veuillez entrer un code à 3 chiffres avant de générer les résultats.");
+                return;
+            }
+
+            const currentCode = codeInput.value;
+            const currentDate = dateSelector.value;
+
+            if (currentCode === lastGeneratedCode && currentDate === lastGeneratedDate && generatedResults) {
+                displayResults(generatedResults);
+                return;
+            }
+
+            lastGeneratedCode = currentCode;
+            lastGeneratedDate = currentDate;
+
+            const seed = parseInt(currentCode + currentDate.replace(/-/g, ''));
+            Math.seedrandom(seed);
+
+            const lotteries = [
+                { name: "Matrice spéciale niger", hasKeyboard: true },
+                { name: "Ghana mid week", hasKeyboard: true, hasBrain: true },
+                { name: "Lnb bénin 11h", hasKeyboard: false },
+                { name: "Lnb bénin 14h", hasKeyboard: true },
+                { name: "Lnb bénin 18h", hasKeyboard: true },
+                { name: "Universelle", hasKeyboard: true, hasExtraKeyboard: true },
+                { name: "Côte d'Ivoire 10h", hasKeyboard: false },
+                { name: "Côte d'Ivoire 13h", hasKeyboard: true },
+                { name: "Côte d'Ivoire 16h", hasKeyboard: false },
+                { name: "Lonato togo 9h", hasKeyboard: true },
+                { name: "Lonato togo 13h", hasKeyboard: false },
+                { name: "Lonato togo 18h", hasKeyboard: false },
+                { name: "Digital 7h", hasKeyboard: true, hasExtraKeyboard: true },
+                { name: "Digital 21h", hasKeyboard: false },
+                { name: "Digital 23h", hasKeyboard: false }
+            ];
+
+            generatedResults = lotteries.map(lottery => ({
+                ...lottery,
+                matrix: generateMatrix(),
+                keyboard: lottery.hasKeyboard ? generateKeyboard() : null,
+                extraKeyboard: lottery.hasExtraKeyboard ? generateKeyboard() : null,
+                brain: lottery.hasBrain ? generateKeyboard() : null,
+                code: generateCode(),
+                event: generateEvent()
+            }));
+
+            displayResults(generatedResults);
+        }
+
+        function displayResults(results) {
+            const selectedDate = new Date(document.getElementById('dateSelector').value);
+            let resultsHtml = '';
+            let copyText = '';
+
+            results.forEach(lottery => {
+                resultsHtml += `
+                    <div class="lotto-result">
+                        <h2>${lottery.name}</h2>
+                        <p>${formatDate(selectedDate)}</p>
+                        <h3>Matrice</h3>
+                        <div class="matrix">
+                            ${lottery.matrix.map(num => `<div class="number">${num}</div>`).join('')}
+                        </div>
+                        ${lottery.hasKeyboard ? `
+                            <h3>Clavier</h3>
+                            <div class="keyboard">
+                                ${lottery.keyboard.map(num => `<div class="number">${num}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                        ${lottery.hasExtraKeyboard ? `
+                            <h3>Clavier supplémentaire</h3>
+                            <div class="keyboard">
+                                ${lottery.extraKeyboard.map(num => `<div class="number">${num}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                        ${lottery.hasBrain ? `
+                            <h3>Brain</h3>
+                            <div class="keyboard">
+                                ${lottery.brain.map(num => `<div class="number">${num}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                        <p class="code">Code ${lottery.code}</p>
+                        <p class="event">Event ${lottery.event}</p>
+                        <p>Cidloto</p>
+                    </div>
+                `;
+
+                copyText += `${lottery.name}\n${formatDate(selectedDate)}\nMatrice\n${lottery.matrix.join('\n')}\n`;
+                if (lottery.hasKeyboard) {
+                    copyText += `Clavier\n${lottery.keyboard.join('\n')}\n`;
+                }
+                if (lottery.hasExtraKeyboard) {
+                    copyText += `Clavier supplémentaire\n${lottery.extraKeyboard.join('\n')}\n`;
+                }
+                if (lottery.hasBrain) {
+                    copyText += `Brain\n${lottery.brain.join('\n')}\n`;
+                }
+                copyText += `Code ${lottery.code}\nEvent ${lottery.event}\nCidloto\n\n`;
+            });
+
+            document.getElementById('results').innerHTML = resultsHtml;
+            document.getElementById('copyArea').value = copyText;
+        }
+
+        function copyToClipboard() {
+            const copyArea = document.getElementById('copyArea');
+            copyArea.select();
+            document.execCommand('copy');
+            alert('Résultats copiés dans le presse-papiers !');
+        }
+
+        function shareResults() {
+            const resultsText = document.getElementById('copyArea').value;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Résultats Lotto',
+                    text: resultsText
+                }).then(() => {
+                    console.log('Partage réussi');
+                }).catch((error) => {
+                    console.log('Erreur lors du partage', error);
+                });
+            } else {
+                alert('Le partage n\'est pas supporté sur votre appareil. Vous pouvez copier le texte manuellement.');
+            }
+        }
+
+        // Initialize date selector
+        initializeDateSelector();
+
+        // Add event listeners for code input and date selector
+        document.getElementById('codeInput').addEventListener('input', function() {
+            const generateButton = document.getElementById('generateButton');
+            generateButton.disabled = !/^\d{3}$/.test(this.value);
+        });
+
+        document.getElementById('dateSelector').addEventListener('change', function() {
+            generatedResults = null; // Reset generated results when date changes
+        });
+
+        // Seed random function
+        Math.seedrandom = function(seed) {
+            var m = 0x80000000,
+                a = 1103515245,
+                c = 12345;
+
+            seed = seed & 0xffffffff;
+
+            return function() {
+                seed = (a * seed + c) % m;
+                return seed / m;
+            };
+        };
+    </script>
+</body>
+</html>
